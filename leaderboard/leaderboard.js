@@ -1,6 +1,7 @@
 
 const request = require("request");
 const cheerio = require("cheerio");
+const singleMatchExtractor = require("./singleMatch");
 
 url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595/match-results"
 
@@ -10,7 +11,7 @@ function cb(error, response, html){
     if(error){
         console.log("some error occured");
     }else{
-        console.log("recieved html")
+        console.log("recieved html \n");
         let $ = cheerio.load(html);
 
         let matchCards = $(".col-md-8.col-16");
@@ -21,7 +22,8 @@ function cb(error, response, html){
             let link = $(container[2]).attr("href");
             let fullLink = "https://www.espncricinfo.com"+link;
 
-            console.log(fullLink);
+            singleMatchExtractor.fn(fullLink);
         }
     }
+    console.log("completed!!!")
 }

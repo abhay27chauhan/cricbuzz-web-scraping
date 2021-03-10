@@ -7,6 +7,8 @@ url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595/delhi-capitals-vs
 
 request(url, cb);
 
+let statsArr = [];
+
 function cb(error, response, html){
     if(error){
         console.log("some error occured");
@@ -19,7 +21,7 @@ function cb(error, response, html){
         let hruns = 0;
 
         for(let i=0; i<table.length; i++){
-            let batsmanRow = $(table[i]).find("tr");
+            let batsmanRow = $(table[i]).find("tbody tr");
 
             for(let j=0; j<batsmanRow.length; j++){
                 let batsmanStats = $(batsmanRow[j]).find("td");
@@ -32,12 +34,16 @@ function cb(error, response, html){
                         hruns = batsmanRuns;
                         batsman = batsmanName;
                     }
-
-                    console.log(batsmanName, "    ", batsmanRuns);
+                    
+                    statsArr.push({
+                        Name: batsmanName,
+                        Runs: batsmanRuns
+                    })
                 }
             }
-
+            console.table(statsArr);
             console.log("--------------------------------------");
+            statsArr = [];
         }
         console.log("highest run scorer: ", batsman, " " , hruns)
     }

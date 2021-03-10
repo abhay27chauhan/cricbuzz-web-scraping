@@ -7,6 +7,8 @@ url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595/delhi-capitals-vs
 
 request(url, cb);
 
+let statsArr = [];
+
 function cb(error, response, html){
     if(error){
         console.log("some error occured");
@@ -29,9 +31,16 @@ function cb(error, response, html){
                     hwt = bowlerWicket;
                 }
 
-                console.log(`${bowlerName}        ${bowlerWicket}`);
+                statsArr.push({
+                    Name: bowlerName,
+                    Wicket: bowlerWicket
+                })
+
+                
             }
+            console.table(statsArr);
             console.log("--------------------------------------------");
+            statsArr = [];
         }
 
         console.log("Highest Wicket Taker: ", hwtker, " No. of Wickets: ", hwt);

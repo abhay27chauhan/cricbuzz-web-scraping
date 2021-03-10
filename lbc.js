@@ -24,3 +24,12 @@ function cb(error, response, html){
 
     }
 }
+
+// cheerio functions
+/*
+1. text()
+2. html() -> returns the first matched result
+3. find()
+4. attr()
+5. hasClass()
+ */
