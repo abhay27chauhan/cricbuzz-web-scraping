@@ -3,7 +3,7 @@ const cheerio = require("cheerio");
 
 url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595/match-results"
 
-let statsArr = [];
+// let statsArr = [];
 let leaderBoardArr = [];
 let gCount;
 let count = 1;
@@ -19,6 +19,7 @@ function cb(error, response, html){
 
         let matchCards = $(".col-md-8.col-16");
         gCount = matchCards.length;
+        console.log(gCount);
         for(let i=0; i<matchCards.length; i++){
             let container = $(matchCards[i]).find(".match-cta-container .btn.btn-sm.btn-outline-dark.match-cta");
 
@@ -53,17 +54,18 @@ function cbsingle(error, response, html){
         let teamName = $(bothInningsTeamName[i]).text().split("INNINGS")[0].trim();
 
         if(teamName === myTeam){
-            console.log(myTeam);
+            // console.log(myTeam);
             let winTeamColBlock = $(colBlock[i]);
             printTeamStats(winTeamColBlock, $);
         }
     }
 
-    if (gCount == count) {
+    if (count === gCount-1) {
             leaderBoardArr.sort((a, b) => b.runs-a.runs);
             console.table(leaderBoardArr);
             console.log("Completed!!")
     } else {
+        console.log(count);
         count++;
     }
 }
@@ -78,17 +80,17 @@ function printTeamStats(winTeamColBlock, $){
             let playerName = $(batsmanStats[0]).text();
             let runs = $(batsmanStats[2]).text();
 
-            statsArr.push({
-                Name: playerName,
-                Runs: runs
-            })
+            // statsArr.push({
+            //     Name: playerName,
+            //     Runs: runs
+            // })
 
             addToLeaderBoard(playerName, runs);
         }
     }
-    console.table(statsArr);
-    console.log("``````````````````````````````````````````````");
-    statsArr = [];
+    // console.table(statsArr);
+    // console.log("``````````````````````````````````````````````");
+    // statsArr = [];
 }
 
 function addToLeaderBoard(playerName, cruns){
