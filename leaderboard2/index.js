@@ -3,20 +3,9 @@ const cheerio = require('cheerio');
 const path = require("path");
 const fs = require("fs");
 
-url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595"
+const url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595"
 
 request(url, cb);
-
-const teamNames = {
-    MI: "Mumbai Indians",
-    DC: "Delhi Capitals",
-    SRH: "Sunrisers Hyderabad",
-    RCB: "Royal Challengers Bangalore",
-    KKR: "Kolkata Knight Riders",
-    PBKS: "Punjab Kings",
-    CSK: "Chennai Super Kings",
-    RR: "Rajasthan Royals"
-}
 
 function cb(error, response, html){
     if(error){
@@ -25,22 +14,9 @@ function cb(error, response, html){
         console.log("recieved html \n");
         const $ = cheerio.load(html);
 
-        const mainFolderPath = path.join(__dirname, "ipl_2020");
-        if(fs.existsSync(mainFolderPath) === false){
-            fs.mkdirSync(mainFolderPath);
-        }
-
-        const tableRow = $(".widget-container .card.content-block.w-100.sidebar-widget tbody tr")
-        console.log(tableRow.length);
-        for(let i=0; i<tableRow.length; i++){
-            let rowData = $(tableRow[i]).find("td");
-            let teamName = $(rowData[0]).text().trim();
-            
-            const teamFolderPath = path.join(mainFolderPath, teamNames[teamName]);
-            if(fs.existsSync(teamFolderPath) === false){
-                fs.mkdirSync(teamFolderPath);
-            }
-
+        const folderPath = path.join(__dirname, "ipl_2020");
+        if(fs.existsSync(folderPath) === false){
+            fs.mkdirSync(folderPath);
         }
 
         const links = $(".jsx-850418440.navbar.navbar-expand-lg.sub-navbar .jsx-850418440.custom-scroll ul li");
@@ -131,7 +107,6 @@ function scorecard(url){
 
 function generateTeamStats(teamColBlock, opponent, winner, matchInfo, $){
     let BatsmanRows = $(teamColBlock).find(".table.batsman tbody tr");
-    let BolwerRows = $(teamColBlock).find(".table.bowler tbody tr");
 
     const teamName = $(teamColBlock).find(".header-title.label").text().split("INNINGS")[0].trim();
 
@@ -141,28 +116,18 @@ function generateTeamStats(teamColBlock, opponent, winner, matchInfo, $){
         result: winner + " wins"
     }
 
-    const bowlerStats = {
-        ...matchInfo,
-        opponent,
-        result: winner + " wins"
-    }
-
-    generateBowlerData(BolwerRows, bowlerStats, teamName, $);
     generateBatsmanData(BatsmanRows, batsmanStats, teamName, $);
 }
 
-function createFile(filePath){
-    fs.openSync(filePath, 'w');
-}
-
 function generateBatsmanData(BatsmanRows, batsmanStats, teamName, $){
-    let batsmanStatsArr = [];
 
     for(let i=0; i<BatsmanRows.length; i++){
         let batsmanAttrCol = $(BatsmanRows[i]).find("td");
 
         if(batsmanAttrCol.length === 8){
-            let playerName = $(batsmanAttrCol[0]).text();
+            let batsmanStatsArr = [];
+
+            let playerName = $(batsmanAttrCol[0]).text().trim();
             let runs = $(batsmanAttrCol[2]).text();
             let balls = $(batsmanAttrCol[3]).text();
             let fours = $(batsmanAttrCol[5]).text();
@@ -176,57 +141,21 @@ function generateBatsmanData(BatsmanRows, batsmanStats, teamName, $){
             batsmanStats["sixes"] = sixes;
             batsmanStats["SR"] = SR;
 
-            let folderPath = path.join(__dirname, "ipl_2020/" +teamName);
-            let filePath = path.join(folderPath, playerName.split(" ").join("_") + ".json");
+            let folderPath = path.join(__dirname, "ipl_2020", teamName);
+            if(fs.existsSync(folderPath) === false){
+                fs.mkdirSync(folderPath);
+            }
+            
+            let filePath = path.join(folderPath, playerName + ".json");
+
+            if(fs.existsSync(filePath)){
+                let rawdata = fs.readFileSync(filePath);
+                batsmanStatsArr = JSON.parse(rawdata);
+            }
 
             batsmanStatsArr.push(batsmanStats);
-
-            if(fs.existsSync(filePath) === false){
-                createFile(filePath);
-                let jsonString = JSON.stringify(batsmanStatsArr, null, "\t");
-                fs.writeFileSync(filePath, jsonString)
-            }else{
-                let rawdata = fs.readFileSync(filePath);
-                let stats = JSON.parse(rawdata);
-                stats.forEach(obj => batsmanStatsArr.push(obj));
-
-                let jsonString = JSON.stringify(batsmanStatsArr, null, "\t");
-                fs.writeFileSync(filePath, jsonString)
-            }
-                
+            let jsonString = JSON.stringify(batsmanStatsArr, null, "\t");
+            fs.writeFileSync(filePath, jsonString)        
         }
     }
 }
-
-function generateBowlerData(BolwerRows, bowlerStats, teamName, $){
-    let bowlerStatsArr = [];
-
-    for(let i=0; i<BolwerRows.length; i++){
-        let bowlerAttrCol = $(BolwerRows[i]).find("td");
-        let bowlerName = $(bowlerAttrCol[0]).text();
-
-        bowlerStats["Name"] = bowlerName;
-        bowlerStats["Runs_Given"] = $(bowlerAttrCol[3]).text();
-        bowlerStats["Wickets"] = $(bowlerAttrCol[4]).text();
-        bowlerStats["ECO"] = $(bowlerAttrCol[5]).text();
-
-        let folderPath = path.join(__dirname, "ipl_2020/" +teamName);
-        let filePath = path.join(folderPath, bowlerName.split(" ").join("_") + ".json");
-
-        bowlerStatsArr.push(bowlerStats);
-
-        if(fs.existsSync(filePath) === false){
-            createFile(filePath);
-            let jsonString = JSON.stringify(bowlerStatsArr, null, "\t");
-            fs.writeFileSync(filePath, jsonString)
-        }else{
-            let rawdata = fs.readFileSync(filePath);
-            let stats = JSON.parse(rawdata);
-            stats.forEach(obj => bowlerStatsArr.push(obj));
-
-            let jsonString = JSON.stringify(bowlerStatsArr, null, "\t");
-            fs.writeFileSync(filePath, jsonString)
-        }
-    }
-}
-
