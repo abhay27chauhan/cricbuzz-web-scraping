@@ -4,8 +4,9 @@
   "description": "",
   "main": "lbc.js",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.5",
     "request": "^2.88.2",
-    "cheerio": "^1.0.0-rc.5"
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {},
   "scripts": {
